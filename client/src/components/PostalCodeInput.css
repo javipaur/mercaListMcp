@@ -1,0 +1,83 @@
+.cp-section {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.cp-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(0,0,0,0.06);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.5rem;
+  transition: background var(--transition);
+}
+
+.cp-input-wrap:focus-within {
+  background: rgba(0,0,0,0.1);
+}
+
+.cp-input-wrap.valid {
+  background: var(--merca-green-light);
+}
+
+.cp-label {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.cp-input {
+  width: 52px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0;
+  outline: none;
+  letter-spacing: 0.05em;
+  font-family: var(--font-mono);
+}
+
+.cp-input::placeholder {
+  color: var(--text-tertiary);
+  font-weight: 400;
+  font-size: 0.7rem;
+}
+
+.cp-valid-icon {
+  color: var(--merca-green);
+  display: flex;
+}
+
+.cp-wh-city {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .cp-input {
+    width: 44px;
+  }
+}
+
+@media (max-width: 640px) {
+  .cp-input {
+    width: 40px;
+    font-size: 0.75rem;
+  }
+
+  .cp-input-wrap {
+    padding: 0.2rem 0.375rem;
+  }
+
+  .cp-wh-city {
+    display: none;
+  }
+}

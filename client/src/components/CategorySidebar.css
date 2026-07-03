@@ -1,0 +1,138 @@
+.cat-sidebar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: sticky;
+  top: 5.5rem;
+  max-height: calc(100vh - 8rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.cat-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.cat-sidebar-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+}
+
+.cat-sidebar-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--merca-yellow);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.cat-sidebar-list {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.cat-sidebar-group {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.cat-sidebar-group:last-child {
+  border-bottom: none;
+}
+
+.cat-sidebar-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text);
+  text-align: left;
+  transition: background var(--transition);
+}
+
+.cat-sidebar-btn:hover {
+  background: var(--merca-yellow-light);
+}
+
+.cat-sidebar-btn.expanded {
+  background: var(--surface-alt);
+  font-weight: 600;
+}
+
+.cat-sidebar-icon {
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 1.25rem;
+  text-align: center;
+}
+
+.cat-sidebar-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cat-sidebar-chevron {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transition: transform var(--transition);
+}
+
+.cat-sidebar-chevron.open {
+  transform: rotate(180deg);
+}
+
+.cat-sidebar-subs {
+  background: var(--surface-alt);
+  padding: 0.25rem 0 0.25rem 1.75rem;
+}
+
+.cat-sidebar-sub {
+  display: block;
+  width: 100%;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: left;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+
+.cat-sidebar-sub:hover {
+  color: var(--text);
+  background: var(--merca-yellow-light);
+}
+
+.cat-sidebar-more {
+  display: block;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+@media (max-width: 900px) {
+  .cat-sidebar {
+    position: static;
+    max-height: none;
+  }
+}

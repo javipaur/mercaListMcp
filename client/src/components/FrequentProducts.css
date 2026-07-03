@@ -1,0 +1,77 @@
+.frequent-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.125rem;
+}
+
+.frequent-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.frequent-sub {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-top: 0.125rem;
+  margin-bottom: 0.75rem;
+}
+
+.frequent-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.frequent-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem 0.375rem 0.375rem;
+  border-radius: 99px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  transition: all var(--transition);
+  max-width: 100%;
+}
+
+.frequent-chip:hover {
+  border-color: var(--merca-yellow);
+  background: var(--merca-yellow-light);
+}
+
+.frequent-chip-img {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.frequent-chip-name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.frequent-chip-price {
+  color: var(--merca-green);
+  font-weight: 700;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.frequent-chip-count {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  background: var(--border);
+  padding: 0.125rem 0.375rem;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
