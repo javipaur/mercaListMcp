@@ -63,29 +63,25 @@ npm run build             # build client → client/dist/
 Sirve `client/dist/` con cualquier servidor estático apuntando `/api` al backend.
 En producción el propio servidor Express sirve los estáticos de `client/dist/`.
 
-## Despliegue con Dokploy
+## Despliegue con Dokploy (Nixpacks)
 
-El proyecto incluye `Dockerfile` listo para Dokploy.
+El proyecto está configurado para Nixpacks (auto-detecta Node.js, instala deps, build y start).
 
 ### En Dokploy:
 
 1. **Crear servicio** → Application
 2. **Source**: tu repositorio de GitHub
-3. **Build**: elegir `Dockerfile`
+3. **Build**: dejar Nixpacks (por defecto)
 4. **Puerto**: `3001`
 5. **Volumen persistente** (opcional pero recomendado):
    - Ruta en el contenedor: `/app/server/cache`
-   - Sirve para conservar los catálogos entre despliegues
+   - Conserva los catálogos entre despliegues
 6. **Variables de entorno**: ninguna requerida (opcional: `PORT`)
 
-### O manualmente:
-
-```bash
-docker build -t mercalist .
-docker run -p 3001:3001 -v mercalist-cache:/app/server/cache mercalist
-```
-
-La app estará en `http://localhost:3001` con API y frontend juntos.
+Nixpacks ejecuta automáticamente:
+- `npm install` + `postinstall` → instala raíz, cliente y servidor
+- `npm run build` → build de Vite a `client/dist/`
+- `npm start` → Express sirve API + frontend juntos en el puerto 3001
 
 ## API (servidor)
 

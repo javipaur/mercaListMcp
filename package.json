@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "postinstall": "npm install --prefix client && npm install --prefix server",
     "dev": "concurrently -n server,client -c green,blue \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "build": "npm run build --prefix client",
-    "start": "npm run dev"
+    "start": "node server/src/index.js"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"
