@@ -6,6 +6,7 @@ import Pantry from './components/Pantry';
 import Toast from './components/Toast';
 import CategoryBar from './components/CategoryBar';
 import PostalCodeInput from './components/PostalCodeInput';
+import CpGate from './components/CpGate';
 import VoiceAssistant from './components/VoiceAssistant';
 import FrequentProducts from './components/FrequentProducts';
 import DiscountedCarousel from './components/DiscountedCarousel';
@@ -26,6 +27,7 @@ export default function App() {
   const [navPath, setNavPath] = useState({ section: '', category: '' });
   const [discountedProducts, setDiscountedProducts] = useState([]);
   const [catalogBuilding, setCatalogBuilding] = useState(false);
+  const [gatePassed, setGatePassed] = useState(false);
   const resultsRef = useRef(null);
 
   const inListIds = new Set(items.map(i => i.id));
@@ -190,6 +192,10 @@ export default function App() {
   }, [results]);
 
   const totalQty = items.reduce((s, i) => s + i.quantity, 0);
+
+  if (!cp && !gatePassed) {
+    return <CpGate cp={cp} onChange={setCp} warehouse={warehouse} onContinue={() => setGatePassed(true)} />;
+  }
 
   return (
     <div className="app">
