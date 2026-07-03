@@ -15,7 +15,7 @@ import { useWebMCP } from './hooks/useWebMCP';
 import './App.css';
 
 export default function App() {
-  const { query, setQuery, results, setResults, loading, error, searchByCategory, searchDiscounted, markVoiceSearchDone } = useProducts();
+  const { query, setQuery, results, setResults, loading, error, searchByCategory, searchDiscounted, markVoiceSearchDone, clearVoiceSearchRef } = useProducts();
   const { items, addItem, removeItem, updateQuantity, clearList } = useShoppingList();
   const { cp, setCp, warehouse, cpError } = usePostalCode();
   const pantry = usePantry();
@@ -38,7 +38,7 @@ export default function App() {
 
     const wh = warehouse.warehouse;
 
-    // Trigger build for this warehouse
+    setCatalogBuilding(true);
     fetch(`/api/catalog/build/${wh}`).catch(() => {});
 
     let timer;
@@ -101,18 +101,23 @@ export default function App() {
   }, [items, pantry, purchaseHistory, clearList]);
 
   const handleSearch = useCallback(async (q) => {
-    const cp = getStoredCP();
-    let url = `/api/products/search?q=${encodeURIComponent(q)}`;
-    if (cp) url += `&cp=${cp}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const results = data.results || [];
-    // Update UI with results from voice search
-    markVoiceSearchDone(q);
-    setQuery(q);
-    setViewMode('search');
-    setResults(results);
-    return results;
+    try {
+      const cp = getStoredCP();
+      let url = `/api/products/search?q=${encodeURIComponent(q)}`;
+      if (cp) url += `&cp=${cp}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Error ${res.status} al buscar`);
+      const data = await res.json();
+      const results = data.results || [];
+      markVoiceSearchDone(q);
+      setQuery(q);
+      setViewMode('search');
+      setResults(results);
+      return results;
+    } catch (err) {
+      console.error('Voice search error:', err);
+      return [];
+    }
   }, [markVoiceSearchDone, setQuery, setResults]);
 
   const handleGetList = useCallback(() => items, [items]);
@@ -147,6 +152,7 @@ export default function App() {
   }, [searchDiscounted]);
 
   const handleQueryChange = useCallback((q) => {
+    clearVoiceSearchRef();
     setQuery(q);
     if (!q.trim()) {
       setViewMode('browse');
@@ -154,7 +160,7 @@ export default function App() {
     } else {
       setViewMode('search');
     }
-  }, [setQuery]);
+  }, [setQuery, clearVoiceSearchRef]);
 
   // Preload discounted for carousel
   useEffect(() => {

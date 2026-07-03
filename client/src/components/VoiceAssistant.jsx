@@ -33,6 +33,7 @@ export default function VoiceAssistant({ onSearch, onAddItem, currentResults, pa
   const inactivityTimer = useRef(null);
   const restartTimer = useRef(null);
   const setupRef = useRef(null);
+  const resultDoneRef = useRef(false);
 
   function relisten() {
     stopListening();
@@ -84,6 +85,7 @@ export default function VoiceAssistant({ onSearch, onAddItem, currentResults, pa
       recognition.onresult = async (event) => {
         if (done) return;
         done = true;
+        resultDoneRef.current = true;
         const text = event.results[0][0].transcript;
         setTranscript(text);
         clearInactivityTimer();
@@ -199,9 +201,10 @@ export default function VoiceAssistant({ onSearch, onAddItem, currentResults, pa
         }
       };
 
-      recognition.onerror = () => {
+      recognition.onerror = (event) => {
         if (done) return;
         done = true;
+        resultDoneRef.current = true;
         clearInactivityTimer();
         if (recognitionRef.current === recognition) {
           recognitionRef.current.onend = null;
@@ -209,11 +212,26 @@ export default function VoiceAssistant({ onSearch, onAddItem, currentResults, pa
           recognitionRef.current = null;
         }
         setListening(false);
+        if (event.error === 'not-allowed') {
+          const msg = 'Permiso del micrófono denegado. Cámbialo en los ajustes del navegador.';
+          setResponse(msg);
+        } else if (event.error === 'no-speech') {
+          setResponse('No te he oído. Prueba a hablar más alto o más cerca del micrófono.');
+        } else if (event.error === 'audio-capture') {
+          setResponse('No se detecta micrófono. Conecta uno e inténtalo de nuevo.');
+        } else if (event.error === 'aborted') {
+          // User clicked again to stop, no feedback needed
+        } else {
+          setResponse(`Error de voz: ${event.error}. Inténtalo de nuevo.`);
+        }
       };
 
       recognition.onend = () => {
         if (recognitionRef.current === recognition) {
           recognitionRef.current = null;
+          if (!done) {
+            setResponse('No te he oído. Prueba a hablar o escribe el producto.');
+          }
           setListening(false);
         }
       };
@@ -223,41 +241,57 @@ export default function VoiceAssistant({ onSearch, onAddItem, currentResults, pa
     } catch (err) {
       console.error('VoiceAssistant setup error:', err);
       setListening(false);
+      if (err.name === 'SecurityError' || err.message?.includes('security')) {
+        setResponse('El micrófono requiere una conexión segura (HTTPS). Abre la página con https://');
+      } else if (err.name === 'NotAllowedError' || err.message?.includes('permission')) {
+        setResponse('Permiso del micrófono denegado. Permítelo en los ajustes del navegador.');
+      } else {
+        setResponse(`Error al iniciar el micrófono: ${err.message || err}.`);
+      }
     }
   }, [onSearch, onAddItem, clearInactivityTimer]);
 
   setupRef.current = setupRecognition;
 
   function speakText(text, rate = 1.1, onDone) {
-    if (recognitionRef.current) {
-      recognitionRef.current.onend = null;
-      recognitionRef.current.onerror = null;
-      try { recognitionRef.current.abort(); } catch {}
-      recognitionRef.current = null;
-    }
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'es-ES';
-    utterance.rate = rate;
+    try {
+      if (recognitionRef.current) {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        try { recognitionRef.current.abort(); } catch {}
+        recognitionRef.current = null;
+      }
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'es-ES';
+      utterance.rate = rate;
 
-    let fired = false;
-    const safeDone = () => {
-      if (fired) return;
-      fired = true;
+      let fired = false;
+      const safeDone = () => {
+        if (fired) return;
+        fired = true;
+        if (onDone) onDone();
+      };
+      utterance.onend = safeDone;
+      utterance.onerror = (e) => {
+        console.error('SpeechSynthesis error:', e);
+        safeDone();
+      };
+
+      if (synthRef.current) {
+        synthRef.current.cancel();
+        synthRef.current.speak(utterance);
+      } else {
+        safeDone();
+      }
+
+      const estimatedMs = Math.min(text.length * 180 + 1500, 15000);
+      setTimeout(() => {
+        if (!fired) safeDone();
+      }, estimatedMs);
+    } catch (err) {
+      console.error('speakText error:', err);
       if (onDone) onDone();
-    };
-    utterance.onend = safeDone;
-    utterance.onerror = (e) => {
-      console.error('SpeechSynthesis error:', e);
-      safeDone();
-    };
-
-    synthRef.current.cancel();
-    synthRef.current.speak(utterance);
-
-    const estimatedMs = Math.min(text.length * 180 + 1500, 15000);
-    setTimeout(() => {
-      if (!fired) safeDone();
-    }, estimatedMs);
+    }
   }
 
   function parseCommand(text, visibleResults, pantryItems = [], lowStock = []) {
@@ -352,6 +386,18 @@ export default function VoiceAssistant({ onSearch, onAddItem, currentResults, pa
     stopListening();
     setListening(true);
     setupRecognition();
+
+    // Fallback: if recognition doesn't get a result after 10s, stop and notify
+    inactivityTimer.current = setTimeout(() => {
+      if (!resultDoneRef.current && recognitionRef.current) {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        try { recognitionRef.current.abort(); } catch {}
+        recognitionRef.current = null;
+        setListening(false);
+        setResponse('No te he oído. Prueba a hablar o escribe el producto.');
+      }
+    }, 10000);
   }, [listening, clearInactivityTimer, stopListening, setupRecognition]);
 
   useEffect(() => {
@@ -360,18 +406,17 @@ export default function VoiceAssistant({ onSearch, onAddItem, currentResults, pa
       if (recognitionRef.current) {
         try { recognitionRef.current.abort(); } catch {}
       }
-      synthRef.current.cancel();
+      try { synthRef.current?.cancel(); } catch {}
     };
   }, []);
 
   return (
     <div className={`voice-assistant${listening ? ' listening' : ''}`}>
       <button
-        className="voice-btn"
+        className={`voice-btn${listening ? ' active' : ''}`}
         onClick={startListening}
-        disabled={listening}
-        aria-label={listening ? 'Escuchando...' : 'Activar asistente de voz'}
-        title="Asistente de voz"
+        aria-label={listening ? 'Detener asistente de voz' : 'Activar asistente de voz'}
+        title={listening ? 'Detener' : 'Asistente de voz'}
       >
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <path

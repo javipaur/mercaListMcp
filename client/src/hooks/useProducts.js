@@ -39,6 +39,7 @@ export function useProducts() {
   const categorySearch = useRef(null);
   const abortRef = useRef(null);
   const voiceSearchRef = useRef(null);
+  const [searchKey, setSearchKey] = useState(0);
 
   useEffect(() => {
     if (categorySearch.current) {
@@ -54,6 +55,7 @@ export function useProducts() {
 
     if (!query.trim()) {
       setResults([]);
+      setLoading(false);
       return;
     }
 
@@ -96,10 +98,11 @@ export function useProducts() {
     return () => {
       clearTimeout(timer);
     };
-  }, [query]);
+  }, [query, searchKey]);
 
   const searchByCategory = useCallback(async (categoryName) => {
     categorySearch.current = true;
+    setSearchKey(k => k + 1);
     setLoading(true);
     setError(null);
     try {
@@ -120,6 +123,7 @@ export function useProducts() {
 
   const searchDiscounted = useCallback(async () => {
     categorySearch.current = true;
+    setSearchKey(k => k + 1);
     setLoading(true);
     setError(null);
     try {
@@ -142,7 +146,11 @@ export function useProducts() {
     voiceSearchRef.current = q;
   }, []);
 
-  return { query, setQuery, results, setResults, loading, error, searchByCategory, searchDiscounted, markVoiceSearchDone };
+  const clearVoiceSearchRef = useCallback(() => {
+    voiceSearchRef.current = null;
+  }, []);
+
+  return { query, setQuery, results, setResults, loading, error, searchByCategory, searchDiscounted, markVoiceSearchDone, clearVoiceSearchRef };
 }
 
 export function useShoppingList() {
