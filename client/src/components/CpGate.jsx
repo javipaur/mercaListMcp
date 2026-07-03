@@ -1,24 +1,49 @@
-import { useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import './CpGate.css';
 
-export default function CpGate({ cp, onChange, warehouse, onContinue }) {
+export default function CpGate({ onConfirm }) {
+  const [input, setInput] = useState('');
+  const [warehouse, setWarehouse] = useState(null);
+  const [checking, setChecking] = useState(false);
   const inputRef = useRef(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
+  useEffect(() => {
+    if (input.length === 5) {
+      setChecking(true);
+      fetch(`/api/warehouse?cp=${input}`)
+        .then(r => r.json())
+        .then(data => {
+          setWarehouse(data);
+          setChecking(false);
+        })
+        .catch(() => {
+          setWarehouse({ valid: false });
+          setChecking(false);
+        });
+    } else {
+      setWarehouse(null);
+    }
+  }, [input]);
+
   function handleInput(e) {
-    onChange(e.target.value.replace(/\D/g, '').slice(0, 5));
+    setInput(e.target.value.replace(/\D/g, '').slice(0, 5));
   }
 
   function handleKeyDown(e) {
-    if (e.key === 'Enter' && canContinue) onContinue();
+    if (e.key === 'Enter' && canContinue) handleContinue();
   }
 
-  const isValid = cp.length === 5 && warehouse?.valid;
-  const canContinue = isValid;
-  const hasError = cp.length === 5 && !warehouse?.valid;
+  function handleContinue() {
+    if (canContinue) onConfirm(input);
+  }
+
+  const isValid = input.length === 5 && warehouse?.valid;
+  const canContinue = isValid && !checking;
+  const hasError = input.length === 5 && warehouse && !warehouse.valid;
 
   return (
     <div className="cp-gate">
@@ -34,17 +59,17 @@ export default function CpGate({ cp, onChange, warehouse, onContinue }) {
           Introduce tu código postal para ver los productos de tu zona
         </p>
 
-        <div className={`cp-gate-input-wrap${isValid ? ' valid' : ''}${hasError ? ' error' : ''}`}>
+        <div className="cp-gate-input-wrap">
           <input
             ref={inputRef}
             type="text"
             inputMode="numeric"
-            value={cp}
+            value={input}
             onChange={handleInput}
             onKeyDown={handleKeyDown}
             placeholder="Código postal"
             maxLength={5}
-            className="cp-gate-input"
+            className={`cp-gate-input${isValid ? ' valid' : ''}${hasError ? ' error' : ''}`}
             aria-label="Código postal"
             aria-invalid={hasError}
           />
@@ -64,16 +89,16 @@ export default function CpGate({ cp, onChange, warehouse, onContinue }) {
         )}
 
         {isValid && warehouse?.warehouse && (
-          <p className="cp-gate-wh">{warehouse.info?.city || warehouse.warehouse}</p>
+          <p className="cp-gate-wh">Mercadona</p>
         )}
 
         <button
           className="cp-gate-btn"
           disabled={!canContinue}
-          onClick={onContinue}
+          onClick={handleContinue}
           type="button"
         >
-          Continuar
+          {checking ? 'Verificando...' : 'Continuar'}
         </button>
       </div>
     </div>

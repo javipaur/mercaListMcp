@@ -42,7 +42,7 @@ export default function PostalCodeInput({ cp, onChange, warehouse, error }) {
         )}
       </div>
       {isValid && (
-        <span className="cp-wh-city">{warehouse.info?.city || warehouse.warehouse}</span>
+        <span className="cp-wh-city">Mercadona</span>
       )}
     </div>
   );

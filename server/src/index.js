@@ -649,6 +649,9 @@ app.get('/api/warehouse', (req, res) => {
     return res.json({ valid: false, error: 'Código postal inválido' });
   }
   const prefix = cp.slice(0, 2);
+  if (!CP_WAREHOUSE[prefix]) {
+    return res.json({ valid: false, error: 'Código postal no corresponde a una provincia con tienda' });
+  }
   const province = PROVINCE_BY_PREFIX[prefix];
   const wh = cpToWarehouse(cp);
   res.json({

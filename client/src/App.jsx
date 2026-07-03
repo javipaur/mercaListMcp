@@ -194,7 +194,7 @@ export default function App() {
   const totalQty = items.reduce((s, i) => s + i.quantity, 0);
 
   if (!cp && !gatePassed) {
-    return <CpGate cp={cp} onChange={setCp} warehouse={warehouse} onContinue={() => setGatePassed(true)} />;
+    return <CpGate onConfirm={(value) => { setCp(value); setGatePassed(true); }} />;
   }
 
   return (
